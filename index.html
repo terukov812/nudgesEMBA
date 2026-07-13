@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Подталкивания (nudges): база примеров EMBA</title>
+<style>
+  :root{
+    --navy:#1f3a4d; --navy-dark:#152a38; --accent:#c07a3e;
+    --bg:#f6f4f0; --card:#ffffff; --border:#e2ddd3; --text:#2b2b2b; --muted:#6b6b6b;
+    --default:#3468a6; --reminder:#3f8c5f; --salience:#c07a3e; --norm:#7a4e9e;
+    --neg-bg:#fdecea; --dp-bg:#fff3d6;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.45;
+  }
+  header{
+    background:var(--navy); color:#fff; padding:18px 16px 14px;
+    position:sticky; top:0; z-index:20; box-shadow:0 2px 8px rgba(0,0,0,.15);
+  }
+  header h1{margin:0 0 4px; font-size:1.15rem; font-weight:700;}
+  header p{margin:0; font-size:.82rem; color:#cfd9e0;}
+  .header-controls{margin-top:10px;}
+  .header-controls .btn.secondary{background:rgba(255,255,255,.1); color:#fff; border-color:rgba(255,255,255,.4);}
+  .header-controls .btn.secondary:active{background:rgba(255,255,255,.2);}
+  nav.tabs{
+    display:flex; gap:6px; margin-top:12px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+  }
+  nav.tabs button{
+    flex:0 0 auto; background:rgba(255,255,255,.08); color:#fff; border:1px solid rgba(255,255,255,.25);
+    padding:8px 14px; border-radius:20px; font-size:.82rem; cursor:pointer; white-space:nowrap;
+  }
+  nav.tabs button.active{background:var(--accent); border-color:var(--accent); font-weight:600;}
+
+  main{max-width:1100px; margin:0 auto; padding:14px 10px 60px;}
+  section.view{display:none;}
+  section.view.active{display:block;}
+
+  .toolbar{
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:10px 12px; margin-bottom:12px;
+  }
+  .toolbar label{font-size:.78rem; color:var(--muted); margin-right:4px;}
+  select, .btn{
+    font-size:.85rem; padding:7px 10px; border-radius:8px; border:1px solid var(--border);
+    background:#fff; color:var(--text);
+  }
+  .btn{cursor:pointer; background:var(--navy); color:#fff; border-color:var(--navy); font-weight:600;}
+  .btn.secondary{background:#fff; color:var(--navy); border-color:var(--navy);}
+  .btn.ghost{background:transparent; border-color:var(--border); color:var(--muted); font-weight:500;}
+  .btn:active{transform:scale(.98);}
+  .counter{font-size:.78rem; color:var(--muted); margin-left:auto;}
+
+  /* Cards */
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:12px 14px; margin-bottom:10px; position:relative;
+  }
+  .card.neg{background:var(--neg-bg);}
+  .card-top{display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; flex-wrap:wrap;}
+  .badge{
+    display:inline-block; font-size:.72rem; font-weight:700; color:#fff; padding:3px 9px;
+    border-radius:12px; white-space:nowrap;
+  }
+  .badge.Дефолт{background:var(--default);}
+  .badge.Напоминание{background:var(--reminder);}
+  .badge.Заметность{background:var(--salience);}
+  .badge.Социальная\ норма{background:var(--norm);}
+  .sphere-tag{font-size:.72rem; color:var(--muted); border:1px solid var(--border); padding:2px 8px; border-radius:10px;}
+
+  .country{font-size:.78rem; color:var(--muted); font-weight:600;}
+  .desc{font-size:.92rem; margin:6px 0 4px; color:var(--text);}
+  .warn-flag{color:#a13d2f; font-size:.75rem; font-weight:700; margin-top:2px;}
+  .dp-flag{display:inline-block; font-size:.68rem; font-weight:700; color:#8a5c00; background:var(--dp-bg); padding:1px 6px; border-radius:6px; margin-left:6px;}
+
+  .details{display:none; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); font-size:.85rem;}
+  .details.show{display:block;}
+  .details dt{font-weight:700; color:var(--navy); margin-top:6px; font-size:.75rem; text-transform:uppercase; letter-spacing:.02em;}
+  .details dd{margin:2px 0 0;}
+  .details a{color:var(--default); word-break:break-all;}
+
+  .fav-btn{
+    border:none; background:none; font-size:1.3rem; cursor:pointer; line-height:1; padding:2px 4px;
+    color:#c9c2b4; margin-left:auto;
+  }
+  .fav-btn.active{color:#e0a020;}
+
+  .empty{text-align:center; color:var(--muted); padding:30px 10px; font-size:.9rem;}
+
+  /* Form */
+  .form-card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:16px;}
+  .form-card h2{margin:0 0 6px; font-size:1.05rem; color:var(--navy);}
+  .form-card p.hint{font-size:.8rem; color:var(--muted); margin:0 0 14px;}
+  #formEmbed iframe{width:100%; min-height:900px; border:none;}
+
+  footer{text-align:center; font-size:.72rem; color:var(--muted); padding:20px 10px 40px;}
+  .footnote{text-align:center; font-size:.75rem; color:var(--muted); padding:16px 10px 4px; margin:0;}
+
+  @media (min-width: 720px){
+    .card-top{align-items:center;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Подталкивания (nudges): база примеров</h1>
+  <p>Модуль "Управление изменениями · EMBA-44 · выгрузка по состоянию на 15.07.2026</p>
+  <div class="header-controls">
+    <button class="btn secondary" id="toggleDetails">Показать детали</button>
+  </div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-view="all">Все примеры</button>
+    <button class="tab-btn" data-view="fav">Мои избранные (<span id="favCount">0</span>)</button>
+    <button class="tab-btn" data-view="add">Добавить свой пример</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- VIEW: ALL EXAMPLES -->
+  <section id="view-all" class="view active">
+    <div class="toolbar">
+      <label for="sortSelect">Сортировать:</label>
+      <select id="sortSelect">
+        <option value="n-asc">По умолчанию (№)</option>
+        <option value="type-asc">Тип подталкивания (А-Я)</option>
+        <option value="sphere-asc">Сфера (А-Я)</option>
+      </select>
+      <span class="counter"><span id="visibleCount">76</span> примеров</span>
+    </div>
+    <div class="toolbar">
+      <label for="filterType">Тип:</label>
+      <select id="filterType"><option value="">Все</option></select>
+      <label for="filterSphere">Сфера:</label>
+      <select id="filterSphere"><option value="">Все</option></select>
+      <label for="filterCountry">Страна:</label>
+      <select id="filterCountry"><option value="">Все</option></select>
+      <button class="btn ghost" id="resetFilters">Сбросить фильтры</button>
+    </div>
+    <div id="listAll"></div>
+    <p class="footnote">Материалы подобраны для учебных целей. Часть примеров помечена как отрицательный/нулевой результат — это тоже полезный кейс для обсуждения.</p>
+  </section>
+
+  <!-- VIEW: FAVORITES -->
+  <section id="view-fav" class="view">
+    <div class="toolbar">
+      <span class="counter" style="margin-left:0;">Сохраняется только в этом браузере</span>
+      <button class="btn ghost" id="clearFav" style="margin-left:auto;">Очистить список</button>
+    </div>
+    <div id="listFav"></div>
+  </section>
+
+  <!-- VIEW: ADD OWN EXAMPLE -->
+  <section id="view-add" class="view">
+    <div class="form-card">
+      <h2>Добавить свой пример подталкивания</h2>
+      <p class="hint">Заполните форму ниже. После отправки пример появится в общем списке у всех участников (обновление может занять пару минут).</p>
+      <div id="formEmbed"><p class="empty">Форма загружается...</p></div>
+    </div>
+
+    <h2 style="font-size:1rem; color:var(--navy); margin:20px 0 8px;">Примеры участников группы</h2>
+    <div id="listUser"><p class="empty">Загрузка...</p></div>
+  </section>
+
+</main>
+
+<footer></footer>
+
+<script>
+/* ======================= НАСТРОЙКИ ФОРМЫ (ЗАПОЛНИТЬ ПЕРЕД ПУБЛИКАЦИЕЙ) ======================= */
+// См. инструкцию — как получить эти значения из Google Forms / Google Sheets.
+// 1) GOOGLE_FORM_EMBED_URL — ссылка вида https://docs.google.com/forms/d/e/XXXX/viewform?embedded=true
+//    Google Forms → значок "Отправить" → вкладка "<>" (embed) → скопировать URL из src="..." кода.
+const GOOGLE_FORM_EMBED_URL = "https://docs.google.com/forms/d/e/1FAIpQLSe-SbyKEFiSlQTr-s5QTb_FsekkYb6PmiSw0mGlLvs-10xfJg/viewform?embedded=true";
+const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQUZoIv_84jzudZCA_PmwKJmj7uNK8qy7HcC1ITOFtHyLY0L_P1rydr6ToSpkaP3-zBV5BHSd4EMty2/pub?gid=583535647&single=true&output=csv";
+/* =============================================================================================== */
+
+const DATA = [{"n": 1, "type": "Дефолт", "sphere": "Финансы", "country": "Великобритания", "desc": "Автоматическое включение работников в корпоративные пенсионные схемы с правом выхода (opt-out) вместо прежнего opt-in", "result": "Участие правомочных работников частного сектора выросло на 37 п.п., до 88% к апрелю 2015; доля отказов ~10%", "srcText": "Cribb & Emmerson (2016), IFS, \"What happens when employers are obliged to nudge?\"", "srcUrl": "https://ifs.org.uk/publications/what-happens-when-employers-are-obliged-nudge-automatic-enrolment-and-pension-saving", "unit": "Pensions Act 2008 / Automatic Enrolment", "evidence": "Квазиэксперимент (поэтапный rollout)", "neg": false, "dp": false}, {"n": 2, "type": "Дефолт", "sphere": "Финансы", "country": "США", "desc": "Автоматическое зачисление новых сотрудников компании в пенсионный план 401(k) вместо добровольной подписки", "result": "Участие новых сотрудников выросло с 37% до 86%", "srcText": "Madrian & Shea (2001), Quarterly Journal of Economics, \"The Power of Suggestion: Inertia in 401(k) Participation\"", "srcUrl": "", "unit": "Корпоративный 401(k) план", "evidence": "Квазиэксперимент (natural experiment)", "neg": false, "dp": false}, {"n": 3, "type": "Дефолт", "sphere": "Финансы", "country": "США", "desc": "Сотрудники заранее соглашаются, что их пенсионные взносы будут автоматически повышаться при каждом повышении зарплаты (дефолтная эскалация)", "result": "Средняя норма сбережений участников выросла с 3,5% до 13,6% за 40 месяцев", "srcText": "Thaler & Benartzi (2004), Journal of Political Economy, \"Save More Tomorrow\"", "srcUrl": "", "unit": "Save More Tomorrow (SMarT)", "evidence": "Полевой эксперимент", "neg": false, "dp": false}, {"n": 4, "type": "Дефолт", "sphere": "Здравоохранение", "country": "Европа (межстрановое сравнение)", "desc": "Сравнение стран с презумпцией согласия на донорство органов (opt-out) и стран с явным согласием (opt-in)", "result": "Эффективное согласие в opt-in странах 4-28%; в opt-out странах 86-100%", "srcText": "Johnson & Goldstein (2003), Science, \"Do Defaults Save Lives?\"", "srcUrl": "https://thedecisionlab.com/intervention/how-default-settings-doubled-organ-donation-rates-in-the-us", "unit": "Национальные регистры доноров органов", "evidence": "Межстрановое сравнение", "neg": false, "dp": false}, {"n": 5, "type": "Дефолт", "sphere": "Экология", "country": "Германия", "desc": "«Зеленый» (более дорогой) тариф установлен как вариант по умолчанию при заключении онлайн-договора; отказ требует активного действия", "result": "Покупка зеленой энергии выросла почти в 10 раз по сравнению с opt-in", "srcText": "Ebeling & Lotz (2015), Nature Climate Change, \"Domestic uptake of green energy promoted by opt-out tariffs\"", "srcUrl": "https://www.nature.com/articles/nclimate2681", "unit": "Энергосбытовая компания", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 7, "type": "Дефолт", "sphere": "Экология", "country": "Швеция", "desc": "Двусторонняя печать установлена как настройка принтеров по умолчанию для сотрудников", "result": "Расход бумаги снизился на 15%; эффект устойчив во времени", "srcText": "Egebark & Ekström (2016), Journal of Environmental Economics and Management, \"Can indifference make the world greener?\"", "srcUrl": "", "unit": "Университет (полевой эксперимент)", "evidence": "Полевой эксперимент", "neg": false, "dp": false}, {"n": 8, "type": "Дефолт", "sphere": "Здравоохранение", "country": "США", "desc": "Сотрудникам по умолчанию назначалась дата и время прививки от гриппа (с возможностью изменить/отменить) вместо самостоятельной записи", "result": "Вакцинация 45% в группе с дефолтной записью против 33% в группе opt-in", "srcText": "Chapman et al. (2010), JAMA, \"Opting In vs Opting Out of Influenza Vaccination\"", "srcUrl": "", "unit": "Медицинский центр (сотрудники)", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 9, "type": "Дефолт", "sphere": "ЗОЖ", "country": "Дания", "desc": "Вегетарианское меню сделано вариантом по умолчанию при регистрации на конференции; мясное - по запросу", "result": "При вегетарианском дефолте ~85-89% участников оставались на нем; при мясном дефолте вегетарианский выбор 2-12%", "srcText": "Hansen, Schilling & Malthesen (2021), Journal of Public Health, \"Nudging healthy and sustainable food choices\"", "srcUrl": "", "unit": "Научные конференции", "evidence": "Полевой эксперимент", "neg": false, "dp": false}, {"n": 10, "type": "Дефолт", "sphere": "Налоги", "country": "США", "desc": "Программа налоговых возвратов (низкодоходные семьи). Часть налогового возврата по умолчанию направлялась в сберегательные облигации (с правом отказа)", "result": "НЕГАТИВНЫЙ/НУЛЕВОЙ: дефолт не повлиял на сбережения - участники, имевшие намерение потратить деньги, просто отказывались", "srcText": "Bronchetti, Dee, Huffman & Magenheim (2013), National Tax Journal / NBER 16887, \"When a Nudge Isn't Enough\"", "srcUrl": "", "unit": "Программа налоговых возвратов (низкодоходные семьи)", "evidence": "Полевой RCT", "neg": true, "dp": false}, {"n": 42, "type": "Дефолт", "sphere": "Транспорт", "country": "США", "desc": "Экраны оплаты предлагали дефолтные кнопки чаевых (15/20/25% против 20/25/30% у другого вендора); анализ 13 млн поездок", "result": "Более высокие дефолты увеличили размер ненулевых чаевых и общий доход водителей, НО доля пассажиров, не оставивших чаевых вовсе, выросла на ~50% - «цена завышенного дефолта»", "srcText": "Haggag & Paci (2014), AEJ: Applied Economics, \"Default Tips\"", "srcUrl": "https://www.aeaweb.org/articles?id=10.1257/app.6.3.1", "unit": "Такси Нью-Йорка (платежные терминалы)", "evidence": "Квазиэксперимент (regression discontinuity)", "neg": true, "dp": false}, {"n": 43, "type": "Дефолт", "sphere": "Общепит", "country": "США", "desc": "Здоровые гарниры и напитки в детских меню сделаны вариантом по умолчанию; альтернативы (картофель фри, газировка) - по запросу", "result": "Дефолтные здоровые гарниры сохранили ~48% заказов, напитки ~66%; калорийность детских заказов -21%", "srcText": "Peters et al. (2016), American Journal of Health Promotion, \"Using Healthy Defaults in Walt Disney World Restaurants\"", "srcUrl": "", "unit": "Walt Disney World (рестораны)", "evidence": "Наблюдательное исследование продаж", "neg": false, "dp": false}, {"n": 44, "type": "Дефолт", "sphere": "Транспорт", "country": "Германия", "desc": "Анализ реальных заказов кастомизации автомобилей: по мере усталости от последовательных выборов покупатели все чаще принимают предустановленные опции", "result": "Порядок вопросов и принятие дефолтов сдвигали итоговую цену конфигурации в среднем на ~1500 евро на автомобиль", "srcText": "Levav, Heitmann, Herrmann & Iyengar (2010), PNAS, \"Order in product customization decisions\"", "srcUrl": "", "unit": "Автопроизводитель (онлайн-конфигуратор)", "evidence": "Полевой эксперимент", "neg": false, "dp": false}, {"n": 45, "type": "Дефолт", "sphere": "НКО", "country": "США", "desc": "Варьирование дефолтной суммы пожертвования в обращениях к донорам", "result": "Смешанный: низкий дефолт повышал долю жертвующих, но снижал средний чек («scale-back»); высокий - наоборот; чистая выручка почти не менялась", "srcText": "Goswami & Urminsky (2016), Journal of Marketing Research, \"When Should the Ask Be a Nudge?\"", "srcUrl": "", "unit": "Благотворительные кампании (email-фандрайзинг)", "evidence": "Полевой RCT", "neg": true, "dp": false}, {"n": 46, "type": "Дефолт", "sphere": "Интернет", "country": "США", "desc": "Подписочные сервисы (10 компаний). Автопродление подписки как дефолт; идентификация через «шоки» замены банковских карт, когда невнимательные подписчики вынуждены принять активное решение", "result": "В месяцы замены карты отток в ~4 раза выше обычного; оценочно невнимательность к дефолту повышает выручку подписочных сервисов на десятки процентов (оценки от +14% до кратных) [DP]", "srcText": "Einav, Klopack & Mahoney (2023), NBER WP 31547 / AER, \"Selling Subscriptions\"", "srcUrl": "", "unit": "Подписочные сервисы (10 компаний)", "evidence": "Квазиэксперимент на транзакционных данных", "neg": false, "dp": true}, {"n": 47, "type": "Дефолт", "sphere": "Транспорт", "country": "ЕС", "desc": "Предотмеченные галочки (страховка, приоритетная посадка) в онлайн-бронировании [DP]", "result": "н/д (компании не раскрывали конверсию); практика признана настолько эффективной и вредной, что ЕС запретил pre-ticked boxes (Consumer Rights Directive 2011/83/EU, ст. 22)", "srcText": "Directive 2011/83/EU; обзор: OECD (2022), \"Dark Commercial Patterns\"", "srcUrl": "", "unit": "Авиакомпании (Ryanair и др.)", "evidence": "Регуляторный кейс", "neg": false, "dp": true}, {"n": 48, "type": "Дефолт", "sphere": "Интернет", "country": "США", "desc": "email-маркетинг. Сравнение форматов согласия на рассылку: предотмеченная галочка (opt-out) против пустой (opt-in) и разные формулировки", "result": "Доля согласившихся на рассылку различалась примерно вдвое в зависимости от дефолта и формулировки (~44,2% против ~69,2% в базовом сравнении)", "srcText": "Johnson, Bellman & Lohse (2002), Marketing Letters, \"Defaults, Framing and Privacy\"", "srcUrl": "", "unit": "Онлайн-опросы регистрации (email-маркетинг)", "evidence": "Онлайн-эксперимент", "neg": false, "dp": false}, {"n": 49, "type": "Дефолт", "sphere": "Финансы", "country": "США", "desc": "Банки (овердрафт по дебетовым картам). Регулятор сменил дефолт: с 2010 овердрафт-«защита» (с комиссиями ~$35) только по явному согласию (opt-in). Банки ответили агрессивным маркетингом возврата к opt-in [DP]", "result": "НЕГАТИВНЫЙ для nudge: в ряде банков до ~75% активных пользователей овердрафта вернулись в программу - маркетинг «победил» дефолт регулятора («counter-nudge»)", "srcText": "Willis (2013), University of Chicago Law Review, \"When Nudges Fail: Slippery Defaults\"", "srcUrl": "", "unit": "Банки (овердрафт по дебетовым картам)", "evidence": "Анализ регуляторных и банковских данных", "neg": true, "dp": true}, {"n": 50, "type": "Дефолт", "sphere": "Сервис", "country": "США", "desc": "Сервис доставки/прачечной. Повышение рекомендованных (дефолтных) сумм чаевых в приложении", "result": "Средние чаевые выросли, но вероятность оставить чаевые вообще снизилась; удовлетворенность, повторные покупки и расходы клиентов не изменились", "srcText": "Alexander, Holz, List et al. (2021), NBER, \"The $100 Million Nudge\" (tipping field experiment)", "srcUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8767780/", "unit": "Сервис доставки/прачечной (полевой RCT)", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 51, "type": "Дефолт", "sphere": "Интернет", "country": "ЕС / Германия", "desc": "Сайты (баннеры cookie-согласия). Предвыбранные чекбоксы и дизайн кнопок в баннерах согласия на маркетинговые cookies [DP]", "result": "Позиция и предвыбор радикально меняют долю согласий (nudging-дизайн повышал согласие в разы); детальными настройками пользуются ~0,1% посетителей", "srcText": "Utz, Degeling, Fahl, Schaub & Holz (2019), ACM CCS, \"(Un)informed Consent: Studying GDPR Consent Notices in the Field\"", "srcUrl": "", "unit": "Сайты (баннеры cookie-согласия)", "evidence": "Полевой эксперимент (>80 000 пользователей)", "neg": false, "dp": true}, {"n": 21, "type": "Заметность", "sphere": "Налоги", "country": "Великобритания", "desc": "Письмо неплательщикам дорожного налога с упрощенной жесткой формулировкой («Заплатите налог или потеряете свой [марка авто]») и фотографией автомобиля владельца", "result": "Письмо с фото автомобиля - наиболее эффективный вариант; по данным BIT, доля оплативших выросла примерно с 40% до 49%", "srcText": "BIT (2012), \"Applying Behavioural Insights to Reduce Fraud, Error and Debt\"; обзор: UCD Behavioural Science Centre", "srcUrl": "https://bsp.ucd.ie/bspirish/", "unit": "BIT + DVLA", "evidence": "Полевой RCT (white paper BIT)", "neg": false, "dp": false}, {"n": 22, "type": "Заметность", "sphere": "Здравоохранение", "country": "Великобритания", "desc": "В SMS-напоминание о приеме в больнице добавлена конкретная стоимость неявки для NHS («неявка стоит NHS около £160»)", "result": "Доля неявок 8,2% против 9,9% при обобщенной формулировке (\"деньги налогоплательщиков\") и ~11% при стандартном напоминании", "srcText": "Hallsworth, Berry, Sanders et al. (2015), PLOS ONE, \"Stating Appointment Costs in SMS Reminders Reduces Missed Hospital Appointments\"", "srcUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4569397/", "unit": "BIT + Public Health England + NHS", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 23, "type": "Заметность", "sphere": "Налоги", "country": "Ирландия", "desc": "Упрощенное письмо-напоминание о подаче декларации без юридического жаргона, с выделением ключевых действий и информацией о данных третьих сторон", "result": "Подача деклараций +17% по сравнению со стандартным письмом", "srcText": "The Revenue (2017), \"Applying Behavioural Science in Tax Administration\"; обзор: UCD Behavioural Science Centre", "srcUrl": "https://bsp.ucd.ie/bspirish/", "unit": "Office of the Revenue Commissioners", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 24, "type": "Заметность", "sphere": "ЗОЖ", "country": "США", "desc": "Маркировка блюд в больничном кафетерии по принципу светофора (зеленый/желтый/красный) + перестановка здоровых продуктов на уровень глаз", "result": "За 2 года продажи «красных» позиций -4 п.п., «зеленых» +5 п.п.", "srcText": "Thorndike, Sonnenberg, Riis, Barraclough & Levy (2012), American Journal of Public Health, \"A 2-Phase Labeling and Choice Architecture Intervention\"", "srcUrl": "", "unit": "Massachusetts General Hospital", "evidence": "Квазиэксперимент (до/после)", "neg": false, "dp": false}, {"n": 25, "type": "Заметность", "sphere": "ЗОЖ", "country": "Китай", "desc": "Светофорная маркировка сахара, жира и соли в меню корпоративного кафетерия (RCT, 153 взрослых, 3 месяца)", "result": "НЕГАТИВНЫЙ/НУЛЕВОЙ: статистически значимого улучшения рациона не выявлено", "srcText": "Liu et al. (2025), JAMA Network Open, \"Traffic Light Labels and Dietary Behavior Change: A Randomized Clinical Trial\"", "srcUrl": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12090027/", "unit": "Fudan University + Shanghai CDC", "evidence": "Полевой RCT", "neg": true, "dp": false}, {"n": 26, "type": "Заметность", "sphere": "Общепит", "country": "США (Нью-Йорк)", "desc": "Обязательное указание калорийности в меню сетей фастфуда; замеры чеков и опросы до/после в низкодоходных районах", "result": "НЕГАТИВНЫЙ/НУЛЕВОЙ: значимого снижения купленных калорий не обнаружено", "srcText": "Elbel, Kersh, Brescoll & Dixon (2009), Health Affairs, \"Calorie Labeling and Food Choices\"", "srcUrl": "", "unit": "Городское регулирование (calorie labeling)", "evidence": "Квазиэксперимент (до/после)", "neg": true, "dp": false}, {"n": 27, "type": "Заметность", "sphere": "Другое", "country": "Великобритания", "desc": "Newcastle University. Над «коробкой честности» для оплаты кофе в офисе размещалось изображение глаз (против изображения цветов)", "result": "Взносы в недели с «глазами» +176% (в ~2,8 раза выше)", "srcText": "Bateson, Nettle & Roberts (2006), Biology Letters, \"Cues of being watched enhance cooperation in a real-world setting\"", "srcUrl": "", "unit": "Newcastle University (полевой эксперимент)", "evidence": "Полевой эксперимент", "neg": false, "dp": false}, {"n": 28, "type": "Заметность", "sphere": "Экология", "country": "Швейцария", "desc": "Дисплей в душе показывал расход энергии/воды в реальном времени в момент потребления", "result": "Расход энергии на душ -22%; эффект устойчив в течение эксперимента", "srcText": "Tiefenbeck et al. (2018), Management Science, \"Overcoming Salience Bias: How Real-Time Feedback Fosters Resource Conservation\"", "srcUrl": "", "unit": "ETH Zurich + энергокомпания", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 29, "type": "Заметность", "sphere": "Налоги", "country": "Великобритания", "desc": "В письма должникам добавлена конкретная финансовая информация: сумма процентов за просрочку и способы оплаты (повышение заметности последствий и действий)", "result": "Доля оплативших +3,2-3,9 п.п. к контролю", "srcText": "Hallsworth, List, Metcalfe & Vlaev (2017), Journal of Public Economics; обзор: Warwick Business School", "srcUrl": "https://www.wbs.ac.uk/news/behavioural-science-nudges-can-stop-tax-avoidance/", "unit": "BIT + HMRC", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 30, "type": "Заметность", "sphere": "Другое", "country": "Нидерланды", "desc": "Аэропорт Схипхол. Изображение мухи в писсуарах мужских туалетов как визуальная «мишень» в точке действия", "result": "н/д (широко цитируемая оценка снижения разбрызгивания на 50-80% анекдотична; контролируемого исследования нет)", "srcText": "Evans-Pritchard (2013), Works That Work; упоминание: Thaler & Sunstein (2008), Nudge", "srcUrl": "", "unit": "Аэропорт Схипхол", "evidence": "Анекдотические данные", "neg": false, "dp": false}, {"n": 63, "type": "Заметность", "sphere": "Интернет", "country": "США", "desc": "StubHub (билетная платформа). A/B-тест: сборы платформы показываются сразу против «drip pricing» (сборы всплывают на чекауте) [DP]", "result": "Скрытие сборов до чекаута увеличило покупки и выручку платформы примерно на 20%; покупатели при скрытых сборах брали более дорогие билеты", "srcText": "Blake, Moshary, Sweeney & Tadelis (2021), Marketing Science / NBER WP 25186, \"Price Salience and Product Choice\"", "srcUrl": "https://www.nber.org/system/files/working_papers/w25186/w25186.pdf", "unit": "StubHub (билетная платформа)", "evidence": "Полевой RCT (миллионы пользователей)", "neg": false, "dp": true}, {"n": 64, "type": "Заметность", "sphere": "E-commerce", "country": "США", "desc": "eBay (аукционы). Разделение цены: низкая стартовая цена + завышенная доставка (доставка менее заметна) против честной единой цены [DP]", "result": "Для недорогих товаров схема с «спрятанной» доставкой давала больше участников и большую итоговую выручку продавца", "srcText": "Hossain & Morgan (2006), B.E. Journal of Economic Analysis & Policy, \"...Plus Shipping and Handling\"", "srcUrl": "", "unit": "eBay (аукционы)", "evidence": "Полевой эксперимент", "neg": false, "dp": true}, {"n": 65, "type": "Заметность", "sphere": "Ритейл", "country": "США", "desc": "Цены с окончанием на 9 ($39 против $34 и $44) - заметность левой цифры", "result": "Цена $39 давала больший спрос, чем идентичный товар за $34; эффект окончания на 9 повышал продажи вплоть до +8% и более", "srcText": "Anderson & Simester (2003), Quantitative Marketing and Economics, \"Effects of $9 Price Endings on Retail Sales\"", "srcUrl": "", "unit": "Каталожный ритейлер (одежда)", "evidence": "Полевые эксперименты", "neg": false, "dp": false}, {"n": 66, "type": "Заметность", "sphere": "Ритейл", "country": "Франция", "desc": "Маркировка Nutri-Score на собственных марках - заметность питательной ценности на полке", "result": "Nutri-Score - лучший из тестированных форматов, но эффект скромный: улучшение питательного качества корзины ~2,5%", "srcText": "Dubois et al. (2021), Journal of the Academy of Marketing Science, \"Effects of front-of-pack labels on the nutritional quality of supermarket food purchases\"", "srcUrl": "", "unit": "Крупные ритейлеры (60 магазинов)", "evidence": "Крупномасштабный полевой RCT", "neg": false, "dp": false}, {"n": 67, "type": "Заметность", "sphere": "ЗОЖ", "country": "Великобритания", "desc": "Убирание сладостей из прикассовой зоны - снижение заметности impulse-товаров в точке решения", "result": "Покупки сладостей и шоколада «на кассе» -17% сразу после внедрения; эффект частично устойчив через год", "srcText": "Ejlerskov et al. (2018), PLOS Medicine, \"Supermarket policies on less-healthy food at checkouts\"", "srcUrl": "", "unit": "Сети супермаркетов (политики прикассовых зон)", "evidence": "Квазиэксперимент (interrupted time series)", "neg": false, "dp": false}, {"n": 68, "type": "Заметность", "sphere": "Ритейл", "country": "США / Европа", "desc": "Число фейсингов и положение на уровне глаз повышают внимание и вероятность попадания в рассмотрение (eye-tracking + продажи)", "result": "Удвоение фейсингов заметно повышает визуальное внимание и оценку бренда; сильнее для малых брендов и покупателей без списка", "srcText": "Chandon, Hutchinson, Bradlow & Young (2009), Journal of Marketing, \"Does In-Store Marketing Work?\"", "srcUrl": "", "unit": "Ритейл (выкладка на полке)", "evidence": "Лабораторно-полевые исследования", "neg": false, "dp": false}, {"n": 69, "type": "Заметность", "sphere": "Общепит", "country": "Китай", "desc": "Чистая заметность: выделение блюд в меню БЕЗ информации об их популярности", "result": "НЕГАТИВНЫЙ/НУЛЕВОЙ: только выделение (saliency) спрос не увеличило - работала именно информация о выборе других", "srcText": "Cai, Chen & Fang (2009), American Economic Review, \"Observational Learning: Evidence from a Randomized Natural Field Experiment\"", "srcUrl": "", "unit": "Сеть ресторанов, Пекин (та же серия RCT, что и в блоке норм)", "evidence": "Полевой RCT", "neg": true, "dp": false}, {"n": 70, "type": "Заметность", "sphere": "E-commerce", "country": "Великобритания / ЕС", "desc": "Booking.com и агрегаторы. Сообщения дефицита и давления («Осталось 2 номера!», «12 человек смотрят сейчас») [DP]", "result": "н/д (конверсия не раскрыта); регулятор CMA признал ряд сообщений вводящими в заблуждение, компании изменили практики (2019)", "srcText": "UK Competition and Markets Authority (2019), hotel booking sites investigation", "srcUrl": "", "unit": "Booking.com и агрегаторы", "evidence": "Регуляторный кейс", "neg": false, "dp": true}, {"n": 71, "type": "Заметность", "sphere": "Общепит", "country": "США (Нью-Йорк)", "desc": "Обязательные калории в меню - заметность энергетической ценности в точке заказа; также в основной таблице", "result": "НЕГАТИВНЫЙ/НУЛЕВОЙ: значимого изменения купленных калорий не выявлено", "srcText": "Elbel, Kersh, Brescoll & Dixon (2009), Health Affairs", "srcUrl": "", "unit": "Сети фастфуда (регулируемая маркировка)", "evidence": "Квазиэксперимент (чеки до/после, контрольный город)", "neg": true, "dp": false}, {"n": 11, "type": "Напоминание", "sphere": "Налоги", "country": "Великобритания", "desc": "SMS-напоминания должникам по судебным штрафам за 10 дней до визита судебного пристава; тестировались персонализация именем и указание суммы", "result": "Персонализированное SMS с именем: средний платеж +189% (с £4,46 до £12,87); среднее по всем SMS +145%", "srcText": "Haynes, Green, Gallagher, John & Torgerson (2013), Journal of Policy Analysis and Management", "srcUrl": "https://www.bhub.org/project/personalized-text-messages-boost-payment-of-delinquent-court-fines/", "unit": "BIT + HM Courts & Tribunals Service", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 12, "type": "Напоминание", "sphere": "Здравоохранение", "country": "США", "desc": "19 вариантов SMS-напоминаний о прививке от гриппа перед плановым визитом к врачу (N=47 306)", "result": "Средний прирост вакцинации +5%; лучший вариант - «вакцина зарезервирована для вас»", "srcText": "Milkman et al. (2021), PNAS, \"A megastudy of text-based nudges encouraging patients to get vaccinated\"", "srcUrl": "https://www.pnas.org/doi/10.1073/pnas.2101165118", "unit": "Penn Medicine + Geisinger (megastudy)", "evidence": "Полевой RCT (megastudy)", "neg": false, "dp": false}, {"n": 13, "type": "Напоминание", "sphere": "Здравоохранение", "country": "США", "desc": "22 варианта SMS-напоминаний о прививке от гриппа клиентам аптек (N=689 693)", "result": "+2,0 п.п. (относительный рост 6,8%) к контролю за 3 месяца", "srcText": "Milkman et al. (2022), PNAS, \"A 680,000-person megastudy of nudges to encourage vaccination in pharmacies\"", "srcUrl": "", "unit": "Walmart pharmacies (megastudy)", "evidence": "Полевой RCT (megastudy)", "neg": false, "dp": false}, {"n": 14, "type": "Напоминание", "sphere": "Образование", "country": "США", "desc": "SMS-напоминания выпускникам школ и их родителям о шагах для зачисления в колледж летом (дедлайны, документы, финансовая помощь)", "result": "Зачисление среди малообеспеченных выпускников +~3 п.п.", "srcText": "Castleman & Page (2015), Journal of Economic Behavior & Organization, \"Summer nudging\"", "srcUrl": "", "unit": "uAspire / summer melt", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 15, "type": "Напоминание", "sphere": "Финансы", "country": "Боливия, Перу, Филиппины", "desc": "Письма/SMS-напоминания вкладчикам о цели накоплений и запланированных взносах", "result": "Достижение сберегательной цели +3%; сберегательные остатки +6%", "srcText": "Karlan, McConnell, Mullainathan & Zinman (2016), Management Science, \"Getting to the Top of Mind: How Reminders Increase Saving\"", "srcUrl": "", "unit": "Банки-партнеры (полевые RCT)", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 16, "type": "Напоминание", "sphere": "Здравоохранение", "country": "Кения", "desc": "Еженедельные SMS «Mambo?» («Как дела?») пациентам на антиретровирусной терапии с ответом медработника при проблемах", "result": "Приверженность терапии 62% против 50% в контроле; вирусная супрессия 57% против 48%", "srcText": "Lester et al. (2010), The Lancet, \"Effects of a mobile phone short message service on antiretroviral treatment adherence in Kenya (WelTel Kenya1)\"", "srcUrl": "", "unit": "WelTel Kenya1", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 17, "type": "Напоминание", "sphere": "Налоги", "country": "Индонезия", "desc": "RCT на 11,2 млн налогоплательщиков: email-напоминания о подаче декларации; наиболее эффективны «планировочные» подсказки (когда и как подать)", "result": "Все варианты увеличили раннюю и общую подачу деклараций; планировочные подсказки - максимальный эффект (величина скромная)", "srcText": "Persian et al. (2023), Behavioural Public Policy, \"Behavioural prompts to increase early filing of tax returns: RCT of 11.2 million taxpayers in Indonesia\"", "srcUrl": "", "unit": "Directorate General of Taxes + BIT", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 18, "type": "Напоминание", "sphere": "Налоги", "country": "Индонезия", "desc": "Настольные календари с напоминаниями об уплате налога для 24 000 малых и средних предприятий; варианты с информационными и «жесткими» сообщениями", "result": "Информационные сообщения повышали платежи (~+12% по платежам в базовой оценке); сочетание с угрозой санкций - лишь +1 п.п. к доле плативших, без роста сумм", "srcText": "World Bank (2020) eMBeD, \"Applying Behavioral Insights to Promote SME Tax Compliance in Indonesia\"", "srcUrl": "https://documents1.worldbank.org/curated/en/448871615957692506/pdf/Applying-Behavioral-Insights-to-Promote-SME-Tax-Compliance-in-Indonesia-Activity-Report.pdf", "unit": "World Bank + Ministry of Finance (DGT)", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 19, "type": "Напоминание", "sphere": "Сервис", "country": "Великобритания", "desc": "Персонализированные SMS безработным от имени конкретного консультанта («Я забронировал вам место... Удачи, Майкл») с напоминанием о ярмарке вакансий", "result": "Явка выросла с 10,5% (стандартное SMS) до 26,8% (персонализированное с пожеланием удачи)", "srcText": "BIT (2015), \"Update Report 2013-2015\"", "srcUrl": "https://www.bi.team/wp-content/uploads/2015/07/BIT_Update-Report-Final-2013-2015.pdf", "unit": "BIT + Jobcentre Plus (Бедфорд)", "evidence": "Полевой RCT (BIT trial)", "neg": false, "dp": false}, {"n": 20, "type": "Напоминание", "sphere": "Здравоохранение", "country": "США", "desc": "SMS-напоминание о доступности вакцины COVID-19 через 1 день после уведомления о праве на прививку", "result": "Первое напоминание: запись на прививку +6,1 п.п., фактическая вакцинация +3,6 п.п.", "srcText": "Dai et al. (2021), Nature, \"Behavioural nudges increase COVID-19 vaccinations\"", "srcUrl": "", "unit": "UCLA/Carbon Health (COVID-19)", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 52, "type": "Напоминание", "sphere": "Сервис", "country": "Италия", "desc": "Сеть фитнес-клубов. Email/SMS-напоминания клиентам о посещении зала (удержание и продление абонементов)", "result": "Напоминания устойчиво повышали посещаемость (~+13%); эффект не затухал при повторении и повышал продления", "srcText": "Calzolari & Nardotto (2017), Management Science, \"Effective Reminders\"", "srcUrl": "", "unit": "Сеть фитнес-клубов", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 53, "type": "Напоминание", "sphere": "Финансы", "country": "Боливия, Перу, Филиппины", "desc": "Банки (сберегательные продукты). Письма/SMS-напоминания вкладчикам о сберегательной цели (маркетинг депозитных продуктов); также в основной таблице", "result": "Достижение цели +3%; остатки на счетах +6%", "srcText": "Karlan, McConnell, Mullainathan & Zinman (2016), Management Science", "srcUrl": "", "unit": "Банки (сберегательные продукты)", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 54, "type": "Напоминание", "sphere": "Финансы", "country": "Великобритания", "desc": "Напоминания клиентам об окончании промо-ставки по вкладу с призывом переключиться", "result": "Своевременное напоминание повышало долю переключившихся на лучшую ставку на 5-9 п.п. к контролю", "srcText": "FCA (2015), Occasional Paper 7, \"Stimulating interest: Reminding savers to act when rates decrease\"", "srcUrl": "", "unit": "FCA + банки (сберегательные счета)", "evidence": "Полевой RCT (регуляторные trials)", "neg": false, "dp": false}, {"n": 55, "type": "Напоминание", "sphere": "Финансы", "country": "Великобритания", "desc": "В письмо о продлении страховки добавлена прошлогодняя премия (напоминание-якорь для сравнения цен)", "result": "Доля клиентов, сменивших страховщика или выторговавших цену, выросла на 11-18% (относительных)", "srcText": "Adams, Hunt, Palmer & Zaliauskas (2016), FCA Occasional Paper 12 / JFE (2021), \"Testing the effectiveness of consumer financial disclosure\"", "srcUrl": "", "unit": "FCA + страховщики (продление полисов)", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 56, "type": "Напоминание", "sphere": "Финансы", "country": "США", "desc": "Банк (кредитные карты). Push/email-напоминания о предстоящем платеже по карте", "result": "СМЕШАННЫЙ/НЕГАТИВНЫЙ side effect: просрочки и late fees по карте снизились, но выросли комиссии за овердрафт на текущем счете - внимание «перетянулось»", "srcText": "Medina (2021), Review of Financial Studies, \"Side Effects of Nudging\"", "srcUrl": "", "unit": "Банк (кредитные карты)", "evidence": "Квазиэксперимент", "neg": true, "dp": false}, {"n": 57, "type": "Напоминание", "sphere": "E-commerce", "country": "Глобально", "desc": "E-commerce (письма о брошенной корзине). Автоматические напоминания о незавершенной покупке через 1-24 часа", "result": "Индустриальные оценки: возврат к покупке ~5-10% получателей; open rate ~40%", "srcText": "Baymard Institute, \"Cart Abandonment Rate Statistics\"; SaleCycle annual reports", "srcUrl": "", "unit": "E-commerce (письма о брошенной корзине)", "evidence": "Индустриальные данные (без независимой верификации)", "neg": false, "dp": false}, {"n": 58, "type": "Напоминание", "sphere": "E-commerce", "country": "Глобально", "desc": "Amazon Subscribe & Save и аналоги. Напоминание + автоповтор пополняемых товаров (совмещено с дефолтом автозаказа)", "result": "н/д (компания не раскрывает); публичных экспериментальных оценок нет", "srcText": "Amazon corporate; обзор практик: Harvard Business Review, \"The Power of Defaults\" (разные годы)", "srcUrl": "", "unit": "Amazon Subscribe & Save и аналоги", "evidence": "Индустриальные данные", "neg": false, "dp": false}, {"n": 59, "type": "Напоминание", "sphere": "Интернет", "country": "США", "desc": "Duolingo. Push-напоминания и «стрики» (серии дней занятий) для удержания в продукте", "result": "Компания заявляет значимый вклад стриков и напоминаний в retention; независимых оценок нет - н/д", "srcText": "Duolingo engineering blog; выступления CPO (публичные, без raw data)", "srcUrl": "", "unit": "Duolingo", "evidence": "Индустриальные данные (A/B-тесты компании)", "neg": false, "dp": false}, {"n": 60, "type": "Напоминание", "sphere": "Здравоохранение", "country": "США", "desc": "Розничные аптечные сети. Автоматические звонки/SMS о необходимости пополнить рецепт (refill reminders) - одновременно маркетинг и приверженность терапии", "result": "Метаанализы показывают умеренный положительный эффект напоминаний на своевременное пополнение рецептов; величина зависит от канала и хроничности", "srcText": "Vervloet et al. (2012), JAMIA, \"The effectiveness of interventions using electronic reminders to improve adherence to chronic medication\"", "srcUrl": "", "unit": "Розничные аптечные сети", "evidence": "Метаанализ RCT", "neg": false, "dp": false}, {"n": 61, "type": "Напоминание", "sphere": "Налоги", "country": "Индонезия", "desc": "Планировочные email-подсказки («когда и как подать») - образец переносимой в CRM механики reminder + plan-making; также в основной таблице", "result": "Рост ранней и общей подачи деклараций (RCT на 11,2 млн человек); величина скромная", "srcText": "Persian et al. (2023), Behavioural Public Policy", "srcUrl": "", "unit": "Directorate General of Taxes (B2G-аналог)", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 31, "type": "Социальная норма", "sphere": "Налоги", "country": "Великобритания", "desc": "В письма-напоминания должникам добавлены нормативные сообщения; сильнейший вариант: «9 из 10 платят вовремя. Вы в очень небольшом меньшинстве, которое еще не заплатило» (RCT, N>200 000)", "result": "«Норма меньшинства» +4,9-5,1 п.п. к контролю; ускорено поступление более £9 млн за 23 дня", "srcText": "Hallsworth, List, Metcalfe & Vlaev (2017), Journal of Public Economics, \"The behavioralist as tax collector\"", "srcUrl": "https://www.sciencedirect.com/science/article/abs/pii/S0047272717300166", "unit": "BIT + HMRC", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 32, "type": "Социальная норма", "sphere": "Налоги", "country": "Гватемала", "desc": "Письма неплательщикам налога на прибыль с нормой меньшинства и фреймом «неуплата - осознанный выбор» (предупреждение об аудите)", "result": "Получившие эти письма заплатили в 4 раза больше, чем получившие стандартное письмо; эффект устойчив до 12 месяцев", "srcText": "Kettle, Hernandez, Ruda & Sanders (2016), World Bank Policy Research WP 7690, \"Behavioral Interventions in Tax Compliance: Evidence from Guatemala\"", "srcUrl": "https://blogs.worldbank.org/en/voices/ongoing-impact-nudging-people-pay-their-taxes", "unit": "SAT + World Bank + BIT", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 33, "type": "Социальная норма", "sphere": "Экология", "country": "США", "desc": "Домохозяйствам рассылались отчеты со сравнением их энергопотребления с соседями (дескриптивная норма + инъюнктивные «смайлики»)", "result": "Среднее снижение потребления 2,0% (диапазон 1,4-3,3% по 17 площадкам); эффект частично сохраняется после прекращения рассылки", "srcText": "Allcott (2011), Journal of Public Economics, \"Social Norms and Energy Conservation\"; Allcott & Rogers (2014), AER", "srcUrl": "https://www.povertyactionlab.org/evaluation/opower-evaluating-impact-home-energy-reports-energy-conservation-united-states", "unit": "Opower / Home Energy Reports", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 34, "type": "Социальная норма", "sphere": "Экология", "country": "США", "desc": "Сеть отелей (полевой эксперимент). Таблички о повторном использовании полотенец: «75% гостей повторно используют полотенца» против стандартного экологического призыва", "result": "Дескриптивная норма: повторное использование 44,1% против 35,1% (стандарт); норма «гости этого номера» - 49,3%", "srcText": "Goldstein, Cialdini & Griskevicius (2008), Journal of Consumer Research, \"A Room with a Viewpoint\"", "srcUrl": "", "unit": "Сеть отелей (полевой эксперимент)", "evidence": "Полевой эксперимент", "neg": false, "dp": false}, {"n": 35, "type": "Социальная норма", "sphere": "Политика", "country": "США (Мичиган)", "desc": "Письмо избирателям с фактической историей голосования их самих и их соседей и обещанием разослать обновление после выборов («социальное давление»)", "result": "Явка +8,1 п.п. (с 29,7% до 37,8%) - один из крупнейших эффектов в литературе о явке", "srcText": "Gerber, Green & Larimer (2008), American Political Science Review, \"Social Pressure and Voter Turnout\"", "srcUrl": "", "unit": "Полевой эксперимент (выборы)", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 36, "type": "Социальная норма", "sphere": "Здравоохранение", "country": "Великобритания", "desc": "Письмо от главного санитарного врача Англии врачам общей практики из топ-20% по выпискам антибиотиков: «80% практик вашего района выписывают меньше антибиотиков, чем вы» (RCT, 791 практика)", "result": "Выписка антибиотиков -3,3%; оценочно 73 406 меньше выписанных позиций за полгода", "srcText": "Hallsworth et al. (2016), The Lancet, \"Provision of social norm feedback to high prescribers of antibiotics\"", "srcUrl": "https://pubmed.ncbi.nlm.nih.gov/26898856/", "unit": "BIT + Public Health England + Chief Medical Officer", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 37, "type": "Социальная норма", "sphere": "Здравоохранение", "country": "Великобритания", "desc": "Аналогичное письмо практикам вне топ-20%, но с растущей выпиской антибиотиков", "result": "НЕГАТИВНЫЙ/НУЛЕВОЙ: статистически значимого эффекта нет (β<-0,01; p=0,565) - эффект нормы не переносится на «середняков»", "srcText": "Gold, Ratajczak, Sallis et al. (2021), Journal of Public Health, \"Provision of social-norms feedback to general practices whose antibiotic prescribing is increasing\"", "srcUrl": "https://link.springer.com/article/10.1007/s10389-021-01645-4", "unit": "Public Health England (повторная волна)", "evidence": "Полевой RCT", "neg": true, "dp": false}, {"n": 38, "type": "Социальная норма", "sphere": "Экология", "country": "США (Атланта)", "desc": "Письма о водосбережении: сравнение потребления домохозяйства с соседями против чисто информационных призывов", "result": "Сильное социальное сравнение: потребление воды -4,8% (против -1-2% у информационных писем); эффект затухает, но частично сохраняется годами", "srcText": "Ferraro & Price (2013), Review of Economics and Statistics, \"Using Nonpecuniary Strategies to Influence Behavior\"", "srcUrl": "", "unit": "Cobb County Water System (полевой RCT, ~100 000 домохозяйств)", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 39, "type": "Социальная норма", "sphere": "Экология", "country": "США (Аризона)", "desc": "Petrified Forest National Park. Таблички против кражи окаменелой древесины; вариант с негативной дескриптивной нормой («многие посетители уносят древесину, разрушая парк»)", "result": "НЕГАТИВНЫЙ (бумеранг): негативная норма увеличила кражи (~7,9% против ~1,7% при инъюнктивной формулировке) - норма легитимизировала нежелательное поведение", "srcText": "Cialdini et al. (2006), Social Influence, \"Managing social norms for persuasive impact\"", "srcUrl": "", "unit": "Petrified Forest National Park", "evidence": "Полевой эксперимент", "neg": true, "dp": false}, {"n": 40, "type": "Социальная норма", "sphere": "Экология", "country": "США (Калифорния)", "desc": "Домохозяйствам сообщали среднее энергопотребление по району; отдельно тестировалась добавка инъюнктивного сигнала (смайлик одобрения)", "result": "Смешанный: у потреблявших ниже среднего чистая дескриптивная норма ПОВЫШАЛА потребление (бумеранг); добавление инъюнктивного смайлика устраняло эффект", "srcText": "Schultz, Nolan, Cialdini, Goldstein & Griskevicius (2007), Psychological Science, \"The Constructive, Destructive, and Reconstructive Power of Social Norms\"", "srcUrl": "", "unit": "Полевой эксперимент (San Marcos)", "evidence": "Полевой эксперимент", "neg": true, "dp": false}, {"n": 72, "type": "Социальная норма", "sphere": "Общепит", "country": "Китай", "desc": "В меню добавлена табличка «5 самых популярных блюд» (дескриптивная норма о выборе других посетителей)", "result": "Спрос на попавшие в топ блюда +13-20%; выделение без информации о популярности эффекта не дало", "srcText": "Cai, Chen & Fang (2009), American Economic Review", "srcUrl": "", "unit": "Сеть ресторанов, Пекин", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 75, "type": "Социальная норма", "sphere": "Общепит", "country": "США", "desc": "Звездный рейтинг как агрегированная социальная норма качества", "result": "+1 звезда Yelp ассоциирована с +5-9% выручки независимого ресторана (сетевые бренды нечувствительны)", "srcText": "Luca (2011/2016), HBS Working Paper 12-016, \"Reviews, Reputation, and Revenue\"", "srcUrl": "https://www.hbs.edu/ris/Publication%20Files/12-016_a7e4a5a2-03f9-490d-b093-8f951238dba2.pdf", "unit": "Yelp / независимые рестораны", "evidence": "Квазиэксперимент (regression discontinuity)", "neg": false, "dp": false}, {"n": 76, "type": "Социальная норма", "sphere": "Другое", "country": "США", "desc": "Книжный рынок (список бестселлеров NYT). Попадание в список бестселлеров как публичный сигнал «что читают все»", "result": "Умеренный средний прирост продаж; для дебютных авторов эффект наибольший (порядка +57%)", "srcText": "Sorensen (2007), Journal of Industrial Economics, \"Bestseller Lists and Product Variety\"", "srcUrl": "", "unit": "Книжный рынок (список бестселлеров NYT)", "evidence": "Квазиэксперимент", "neg": false, "dp": false}, {"n": 77, "type": "Социальная норма", "sphere": "E-commerce", "country": "США", "desc": "Amazon против Barnes & Noble (онлайн-отзывы). Пользовательские отзывы на книги как норма/сигнал качества", "result": "Улучшение отзывов на одной площадке повышало относительные продажи книги именно там; негативные отзывы влияли сильнее позитивных", "srcText": "Chevalier & Mayzlin (2006), Journal of Marketing Research, \"The Effect of Word of Mouth on Sales\"", "srcUrl": "", "unit": "Amazon против Barnes & Noble (онлайн-отзывы)", "evidence": "Квазиэксперимент (diff-in-diff)", "neg": true, "dp": false}, {"n": 78, "type": "Социальная норма", "sphere": "НКО", "country": "Великобритания", "desc": "При составлении завещания клиентам говорили, что «многие наши клиенты оставляют пожертвование на благотворительность»", "result": "Простая просьба удвоила долю завещаний с пожертвованием (~5% до ~10%), социальная норма - утроила (до ~15%)", "srcText": "Sanders & Smith (2016), Journal of Economic Behavior & Organization, \"Can simple prompts increase bequest giving?\" (BIT)", "srcUrl": "", "unit": "Кампания Remember A Charity + юристы (завещания)", "evidence": "Полевой RCT", "neg": false, "dp": false}, {"n": 79, "type": "Социальная норма", "sphere": "НКО", "country": "Швейцария", "desc": "Студентам при оплате семестра сообщали, что большинство (64%) сокурсников жертвуют в благотворительные фонды", "result": "Информация о высокой норме повышала долю жертвующих на несколько п.п. по сравнению с сообщением о низкой норме", "srcText": "Frey & Meier (2004), American Economic Review, \"Social Comparisons and Pro-social Behavior\"", "srcUrl": "", "unit": "Университет Цюриха (фандрайзинг)", "evidence": "Полевой эксперимент", "neg": false, "dp": false}, {"n": 80, "type": "Социальная норма", "sphere": "Экология", "country": "Китай", "desc": "Геймифицированное «социальное доказательство» зеленого поведения: рейтинги друзей, обмен «энергией», публичные виртуальные леса; за низкоуглеродные действия - реальные деревья", "result": "Масштаб: >600 млн участников, >326 млн посаженных деревьев (2021), премия UNEP Champions of the Earth 2019; причинный эффект на поведение отдельного пользователя RCT не оценивался - н/д", "srcText": "Ant Group (2021) ; UNFCCC case study https://unfccc.int/climate-action/momentum-for-change/planetary-health/alipay-ant-forest", "srcUrl": "https://www.businesswire.com/news/home/20210825005340/en/", "unit": "Ant Forest (Alipay, Ant Group)", "evidence": "Программные данные (подтверждены UNEP/UNFCCC), RCT нет", "neg": false, "dp": false}, {"n": 81, "type": "Социальная норма", "sphere": "Финансы", "country": "Россия", "desc": "Т-Банк (Тинькофф) - геймификация. Квест для клиентов банка: 7 заданий, стимулирующих использование продуктов (социально-игровая механика с элементами нормирования поведения)", "result": "Вендор заявляет +20% к числу транзакций участников; контрольная группа и методология не раскрыты - оценка ненадежна", "srcText": "Gamification Now (кейс вендора)", "srcUrl": "https://www.gamification-now.ru/cases/tinkoff-quest-gamification", "unit": "Т-Банк (Тинькофф) - геймификация", "evidence": "Индустриальные данные (без независимой верификации)", "neg": false, "dp": false}];
+
+const TYPE_ORDER = ["Дефолт","Напоминание","Заметность","Социальная норма"];
+
+let detailsShown = false;
+let favorites = JSON.parse(localStorage.getItem('nudge_favorites') || '[]');
+let filters = { type:'', sphere:'', country:'' };
+
+function saveFav(){ localStorage.setItem('nudge_favorites', JSON.stringify(favorites)); updateFavCount(); }
+function updateFavCount(){ document.getElementById('favCount').textContent = favorites.length; }
+function isFav(n){ return favorites.includes(n); }
+function toggleFav(n){
+  if(isFav(n)) favorites = favorites.filter(x=>x!==n);
+  else favorites.push(n);
+  saveFav();
+  renderAll();
+  renderFav();
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function cardHTML(item){
+  const negClass = item.neg ? 'neg' : '';
+  const dpFlag = item.dp ? '<span class="dp-flag">тёмный паттерн</span>' : '';
+  const warn = item.neg ? '<div class="warn-flag">⚠ Отрицательный / нулевой / смешанный результат</div>' : '';
+  const srcLink = item.srcUrl
+    ? `<a href="${escapeHtml(item.srcUrl)}" target="_blank" rel="noopener">${escapeHtml(item.srcText || item.srcUrl)}</a>`
+    : escapeHtml(item.srcText);
+
+  return `
+  <div class="card ${negClass}" data-n="${item.n}">
+    <div class="card-top">
+      <span class="badge ${item.type.replace(' ','\\ ')}">${escapeHtml(item.type)}</span>
+      <span class="sphere-tag">${escapeHtml(item.sphere)}</span>
+      <button class="fav-btn ${isFav(item.n)?'active':''}" onclick="toggleFav(${item.n})" title="В избранное">${isFav(item.n)?'★':'☆'}</button>
+    </div>
+    <div class="country">${escapeHtml(item.country)}</div>
+    <div class="desc">${escapeHtml(item.desc)}${dpFlag}</div>
+    ${warn}
+    <div class="details ${detailsShown?'show':''}">
+      <dt>Количественный результат</dt><dd>${escapeHtml(item.result || 'н/д')}</dd>
+      <dt>Источник</dt><dd>${srcLink}</dd>
+      <dt>BI Unit / компания / проект</dt><dd>${escapeHtml(item.unit || 'н/д')}</dd>
+      <dt>Доказательность</dt><dd>${escapeHtml(item.evidence || 'н/д')}</dd>
+    </div>
+  </div>`;
+}
+
+function filterData(arr){
+  return arr.filter(d =>
+    (!filters.type || d.type === filters.type) &&
+    (!filters.sphere || d.sphere === filters.sphere) &&
+    (!filters.country || d.country === filters.country)
+  );
+}
+
+function sortData(arr, mode){
+  const copy = arr.slice();
+  if(mode === 'type-asc'){
+    copy.sort((a,b)=> TYPE_ORDER.indexOf(a.type) - TYPE_ORDER.indexOf(b.type) || a.n - b.n);
+  } else if(mode === 'sphere-asc'){
+    copy.sort((a,b)=> a.sphere.localeCompare(b.sphere,'ru') || a.n - b.n);
+  } else {
+    copy.sort((a,b)=> a.n - b.n);
+  }
+  return copy;
+}
+
+function renderAll(){
+  const mode = document.getElementById('sortSelect').value;
+  const sorted = sortData(filterData(DATA), mode);
+  document.getElementById('listAll').innerHTML = sorted.length
+    ? sorted.map(cardHTML).join('')
+    : '<p class="empty">Нет примеров, подходящих под выбранные фильтры.</p>';
+  document.getElementById('visibleCount').textContent = sorted.length;
+}
+
+function renderFav(){
+  const items = DATA.filter(d => isFav(d.n));
+  const el = document.getElementById('listFav');
+  if(items.length === 0){
+    el.innerHTML = '<p class="empty">Список пуст. Отметьте примеры звёздочкой ☆ во вкладке «Все примеры».</p>';
+  } else {
+    el.innerHTML = items.map(cardHTML).join('');
+  }
+}
+
+/* ---- Tabs ---- */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-' + btn.dataset.view).classList.add('active');
+  });
+});
+
+/* ---- Sorting & details toggle ---- */
+document.getElementById('sortSelect').addEventListener('change', renderAll);
+document.getElementById('toggleDetails').addEventListener('click', function(){
+  detailsShown = !detailsShown;
+  this.textContent = detailsShown ? 'Скрыть детали' : 'Показать детали';
+  document.querySelectorAll('.details').forEach(d=> d.classList.toggle('show', detailsShown));
+});
+
+document.getElementById('clearFav').addEventListener('click', ()=>{
+  if(confirm('Очистить список избранных примеров?')){
+    favorites = [];
+    saveFav();
+    renderAll();
+    renderFav();
+  }
+});
+
+/* ---- CSV parsing (simple, handles quoted fields) ---- */
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i], next = text[i+1];
+    if(inQuotes){
+      if(c === '"' && next === '"'){ field += '"'; i++; }
+      else if(c === '"'){ inQuotes = false; }
+      else { field += c; }
+    } else {
+      if(c === '"'){ inQuotes = true; }
+      else if(c === ','){ row.push(field); field=''; }
+      else if(c === '\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+      else if(c === '\r'){ /* skip */ }
+      else { field += c; }
+    }
+  }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.length>1 || (r[0] && r[0].trim()!==''));
+}
+
+function renderUserExamples(rows){
+  const el = document.getElementById('listUser');
+  if(!rows || rows.length <= 1){
+    el.innerHTML = '<p class="empty">Пока нет добавленных примеров. Будьте первым!</p>';
+    return;
+  }
+  const body = rows.slice(1); // skip header row
+  el.innerHTML = body.map(r => {
+    const [timestamp, name, who, desc, measure] = r;
+    if(!name && !desc) return '';
+    return `
+    <div class="card">
+      <div class="card-top">
+        <span class="badge" style="background:var(--navy);">${escapeHtml(name||'Без имени')}</span>
+      </div>
+      <div class="desc"><strong>Кого/к чему:</strong> ${escapeHtml(who||'')}</div>
+      <div class="desc"><strong>Подталкивание:</strong> ${escapeHtml(desc||'')}</div>
+      <div class="desc"><strong>Измерение результата:</strong> ${escapeHtml(measure||'')}</div>
+    </div>`;
+  }).join('');
+  if(!el.innerHTML.trim()){
+    el.innerHTML = '<p class="empty">Пока нет добавленных примеров. Будьте первым!</p>';
+  }
+}
+
+function loadUserExamples(){
+  if(GOOGLE_SHEET_CSV_URL.includes('YOUR_SHEET_ID')){
+    document.getElementById('listUser').innerHTML =
+      '<p class="empty">Форма ещё не подключена организатором курса. См. инструкцию по настройке.</p>';
+    return;
+  }
+  fetch(GOOGLE_SHEET_CSV_URL + '&_=' + Date.now())
+    .then(r => r.text())
+    .then(text => renderUserExamples(parseCSV(text)))
+    .catch(() => {
+      document.getElementById('listUser').innerHTML =
+        '<p class="empty">Не удалось загрузить примеры участников. Обновите страницу позже.</p>';
+    });
+}
+
+/* ---- Embed Google Form as iframe ---- */
+function loadFormEmbed(){
+  const el = document.getElementById('formEmbed');
+  if(GOOGLE_FORM_EMBED_URL.includes('YOUR_FORM_ID')){
+    el.innerHTML = '<p class="empty">Форма ещё не подключена организатором курса.</p>';
+    return;
+  }
+  el.innerHTML = `<iframe src="${GOOGLE_FORM_EMBED_URL}" width="100%" height="900" frameborder="0" style="border:none; display:block;">Загрузка формы...</iframe>`;
+}
+
+/* ---- Filters ---- */
+function uniqueSorted(field){
+  return [...new Set(DATA.map(d => d[field]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ru'));
+}
+function populateFilters(){
+  const typeOrderMap = {"Дефолт":0,"Напоминание":1,"Заметность":2,"Социальная норма":3};
+  const types = uniqueSorted('type').sort((a,b)=> (typeOrderMap[a]??9) - (typeOrderMap[b]??9));
+  fillSelect('filterType', types);
+  fillSelect('filterSphere', uniqueSorted('sphere'));
+  fillSelect('filterCountry', uniqueSorted('country'));
+}
+function fillSelect(id, values){
+  const sel = document.getElementById(id);
+  values.forEach(v=>{
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    sel.appendChild(opt);
+  });
+}
+document.getElementById('filterType').addEventListener('change', e=>{ filters.type = e.target.value; renderAll(); });
+document.getElementById('filterSphere').addEventListener('change', e=>{ filters.sphere = e.target.value; renderAll(); });
+document.getElementById('filterCountry').addEventListener('change', e=>{ filters.country = e.target.value; renderAll(); });
+document.getElementById('resetFilters').addEventListener('click', ()=>{
+  filters = { type:'', sphere:'', country:'' };
+  document.getElementById('filterType').value = '';
+  document.getElementById('filterSphere').value = '';
+  document.getElementById('filterCountry').value = '';
+  renderAll();
+});
+
+/* ---- Init ---- */
+populateFilters();
+updateFavCount();
+renderAll();
+renderFav();
+loadFormEmbed();
+loadUserExamples();
+setInterval(loadUserExamples, 60000); // авто-обновление раз в минуту
+</script>
+</body>
+</html>
